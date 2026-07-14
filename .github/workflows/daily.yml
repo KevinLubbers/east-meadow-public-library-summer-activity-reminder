@@ -22,4 +22,8 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run script
+        env:
+          AUTOMATION_EMAIL: ${{ secrets.AUTOMATION_EMAIL }}
+          AUTOMATION_PASSWORD: ${{ secrets.AUTOMATION_PASSWORD }}
+          AUTOMATION_PHONENUMBER: ${{ secrets.AUTOMATION_PHONENUMBER }}
         run: main.py

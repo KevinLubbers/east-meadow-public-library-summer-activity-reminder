@@ -3,7 +3,7 @@ name: Library Alert
 on:
   schedule:
     # 9:29 AM Eastern (adjust for DST if needed)
-    - cron: "29 13 * * *"
+    - cron: "25 13 * * *"
 
   workflow_dispatch:
 
@@ -26,4 +26,4 @@ jobs:
           AUTOMATION_EMAIL: ${{ secrets.AUTOMATION_EMAIL }}
           AUTOMATION_PASSWORD: ${{ secrets.AUTOMATION_PASSWORD }}
           AUTOMATION_PHONENUMBER: ${{ secrets.AUTOMATION_PHONENUMBER }}
-        run: main.py
+        run: python main.py

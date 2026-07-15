@@ -16,7 +16,7 @@ params = {
     "perpage": 500,
     "page": 1,
     "audience": "",
-    "cats": 76973,
+    "cats": "76973, 76959, 76952",
     "camps": "undefined",
     "inc": 0,
 }

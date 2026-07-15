@@ -43,7 +43,7 @@ for record in data["results"]:
 
     if reg_open.date() == now.date():
         msg_string += f"{record.get('startdt')} - {record['title']} - Registration Open: {record.get('registration_enabled')} - Seats Available: {record.get('seatsleft_text')}\n"
-        msg_string += f"{record.get('url')}"
+        msg_string += f"{record.get('url')}\n"
         #print(f"{record.get('startdt')} - {record['title']} - Registration Open: {record.get('registration_enabled')} - Seats Available: {record.get('seatsleft_text')}")
         #print(f"{record.get('url')}")
         #print()

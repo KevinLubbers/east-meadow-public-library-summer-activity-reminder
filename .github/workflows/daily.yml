@@ -1,10 +1,6 @@
 name: Library Alert
 
 on:
-  schedule:
-    # 9:29 AM Eastern (adjust for DST if needed)
-    - cron: "25 13 * * *"
-
   workflow_dispatch:
 
 jobs:

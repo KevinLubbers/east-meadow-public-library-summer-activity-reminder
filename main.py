@@ -1,4 +1,5 @@
 import os
+import json
 import requests
 import smtplib
 from email.message import EmailMessage
@@ -8,56 +9,73 @@ AUTOMATION_EMAIL = os.environ["AUTOMATION_EMAIL"]
 AUTOMATION_PASSWORD = os.environ["AUTOMATION_PASSWORD"]
 AUTOMATION_PHONENUMBER = os.environ["AUTOMATION_PHONENUMBER"]
 
-url = "https://eastmeadow.libcal.com/ajax/calendar/list"
+#with open(".env", "r") as file:
+    #config = json.load(file)
 
-params = {
-    "c": 20871,
-    "date": "0000-00-00",
-    "perpage": 500,
-    "page": 1,
-    "audience": "",
-    "cats": "76973, 76959",
-    "camps": "undefined",
-    "inc": 0,
-}
+config = json.loads(os.environ["CONFIG_JSON"])
 
-response = requests.get(url, params=params, timeout=10)
+libraries = config["libraries"]
+subscribers = config["subscribers"]
 
-# Raise an exception if the request failed (404, 500, etc.)
-response.raise_for_status()
+data_list = []
+for library_name, library in libraries.items():
 
-# Parse the JSON into Python objects
-data = response.json()
+    params = {
+        "c": -1,
+        "date": "0000-00-00",
+        "perpage": 500,
+        "page": 1,
+        "audience": "",
+        "cats": library["cats"],
+        "camps": "undefined",
+        "inc": 0,
+    }
 
-#print(data["results"][0].keys())
+    response = requests.get(
+        library["url"],
+        params=params
+    )
 
-#print(type(data))
+    response.raise_for_status()
+
+    data = response.json()
+    data_list.extend(data["results"])
+
+
 
 now = datetime.now()
-msg_string = "Library Activity Alert: \n"
-for record in data["results"]:
+sign_up_list = []
+for record in data_list:
     seats = record.get("seatsleft")
     date_check = datetime.strptime(record.get("startdt"), "%Y-%m-%d %H:%M:%S")
     reg_open = (date_check - timedelta(days=14))
 
 
     if reg_open.date() == now.date():
-        msg_string += f"{record.get('startdt')} - {record['title']} - Registration Open: {record.get('registration_enabled')} - Seats Available: {record.get('seatsleft_text')}\n"
-        msg_string += f"{record.get('url')}\n"
-        #print(f"{record.get('startdt')} - {record['title']} - Registration Open: {record.get('registration_enabled')} - Seats Available: {record.get('seatsleft_text')}")
-        #print(f"{record.get('url')}")
-        #print()
+        sign_up_list.append(record)
+
+if len(sign_up_list) != 0:
+    for each_subscriber in subscribers:
+        msg_string = "Library Activity Alert: \n"
+        print(each_subscriber)
+        for record in sign_up_list:
+            for each_cat in record["categories_arr"]:
+                for each_category in each_subscriber["categories"]:
+                    if each_cat.get("cat_id") == each_category:
+                        msg_string += f"{record.get('startdt')} - {record['title']} - Registration Open: {record.get('registration_enabled')} - Seats Available: {record.get('seatsleft_text')}\n"
+                        msg_string += f"{record.get('url')}\n\n"
 
 
-msg = EmailMessage()
+        print(each_subscriber.get("phone")," - ", msg_string)
 
-msg["From"] = AUTOMATION_EMAIL
-msg["To"] = AUTOMATION_PHONENUMBER
-msg["Subject"] = ""
+        msg = EmailMessage()
 
-msg.set_content(msg_string)
+        msg["From"] = AUTOMATION_EMAIL
+        msg["To"] = each_subscriber.get("phone")
+        msg["Subject"] = ""
 
-with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-    smtp.login(AUTOMATION_EMAIL, AUTOMATION_PASSWORD)
-    #print(repr(msg))
-    smtp.send_message(msg)
+        msg.set_content(msg_string)
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(AUTOMATION_EMAIL, AUTOMATION_PASSWORD)
+            smtp.send_message(msg)

@@ -9,8 +9,10 @@ AUTOMATION_EMAIL = os.environ["AUTOMATION_EMAIL"]
 AUTOMATION_PASSWORD = os.environ["AUTOMATION_PASSWORD"]
 AUTOMATION_PHONENUMBER = os.environ["AUTOMATION_PHONENUMBER"]
 
-#with open(".env", "r") as file:
-    #config = json.load(file)
+'''uncomment to load secrets from .env
+with open(".env", "r") as file:
+    config = json.load(file)
+'''
 
 config = json.loads(os.environ["CONFIG_JSON"])
 
@@ -62,17 +64,14 @@ if len(sign_up_list) != 0:
             for each_cat in record["categories_arr"]:
                 for each_category in each_subscriber["categories"]:
                     if each_cat.get("cat_id") == each_category:
-                        msg_string += f"{record.get('startdt')} - {record['title']} - Registration Open: {record.get('registration_enabled')} - Seats Available: {record.get('seatsleft_text')}\n"
+                        msg_string += f"{record.get('fromTime')} - {record['title']}\n"
                         msg_string += f"{record.get('url')}\n\n"
-
-
-        print(each_subscriber.get("phone")," - ", msg_string)
 
         msg = EmailMessage()
 
         msg["From"] = AUTOMATION_EMAIL
         msg["To"] = each_subscriber.get("phone")
-        msg["Subject"] = ""
+        msg["Subject"] = "Library Activity Alert"
 
         msg.set_content(msg_string)
 

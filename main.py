@@ -74,43 +74,43 @@ for record in data_list:
 
 with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
     smtp.login(AUTOMATION_EMAIL, AUTOMATION_PASSWORD)
-if len(sign_up_list) != 0:
-    for each_subscriber in subscribers:
-        msg_string = "Library Activity Two Week Alert: \n"
-        for record in sign_up_list:
-            for each_cat in record["categories_arr"]:
-                for each_category in each_subscriber["categories"]:
-                    if each_cat.get("cat_id") == each_category:
-                        msg_string += f"{record.get('fromTime')} - {record['title']}\n"
-                        msg_string += f"{record.get('url')}\n\n"
+    if len(sign_up_list) != 0:
+        for each_subscriber in subscribers:
+            msg_string = "Library Activity Two Week Alert: \n"
+            for record in sign_up_list:
+                for each_cat in record["categories_arr"]:
+                    for each_category in each_subscriber["categories"]:
+                        if each_cat.get("cat_id") == each_category:
+                            msg_string += f"{record.get('fromTime')} - {record['title']}\n"
+                            msg_string += f"{record.get('url')}\n\n"
 
-        if msg_string != "Library Activity Two Week Alert: \n":
-            msg = EmailMessage()
-            msg["From"] = AUTOMATION_EMAIL
-            msg["To"] = each_subscriber.get("phone")
-            msg["Subject"] = "Library Activity Alert"
+            if msg_string != "Library Activity Two Week Alert: \n":
+                msg = EmailMessage()
+                msg["From"] = AUTOMATION_EMAIL
+                msg["To"] = each_subscriber.get("phone")
+                msg["Subject"] = "Library Activity Alert"
 
-            msg.set_content(msg_string)
-            smtp.send_message(msg)
+                msg.set_content(msg_string)
+                smtp.send_message(msg)
             
 
-if len(restricted_list) != 0:
-    for each_subscriber in subscribers:
-        msg_string = "Library Activity Registration Opening Alert: \n"
-        for record in restricted_list:
-            for each_cat in record["categories_arr"]:
-                for each_category in each_subscriber["categories"]:
-                    if each_cat.get("cat_id") == each_category:
-                        msg_string += f"{record.get('fromTime')} - {record['title']}\n"
-                        msg_string += f"{record.get('registration_msg', {}).get('msg')}\n"
-                        msg_string += f"{record.get('url')}\n\n"
+    if len(restricted_list) != 0:
+        for each_subscriber in subscribers:
+            msg_string = "Library Activity Registration Opening Alert: \n"
+            for record in restricted_list:
+                for each_cat in record["categories_arr"]:
+                    for each_category in each_subscriber["categories"]:
+                        if each_cat.get("cat_id") == each_category:
+                            msg_string += f"{record.get('fromTime')} - {record['title']}\n"
+                            msg_string += f"{record.get('registration_msg', {}).get('msg')}\n"
+                            msg_string += f"{record.get('url')}\n\n"
 
-        if msg_string != "Library Activity Registration Opening Alert: \n":
-            msg = EmailMessage()
+            if msg_string != "Library Activity Registration Opening Alert: \n":
+                msg = EmailMessage()
 
-            msg["From"] = AUTOMATION_EMAIL
-            msg["To"] = each_subscriber.get("phone")
-            msg["Subject"] = "Library Activity Registration Opening Alert"
+                msg["From"] = AUTOMATION_EMAIL
+                msg["To"] = each_subscriber.get("phone")
+                msg["Subject"] = "Library Activity Registration Opening Alert"
 
-            msg.set_content(msg_string)
-            smtp.send_message(msg)
+                msg.set_content(msg_string)
+                smtp.send_message(msg)

@@ -54,7 +54,7 @@ for record in data_list:
     two_week_check = (date_check - timedelta(days=14))
     if not record.get("registration_enabled"):
         registration_msg = record.get("registration_msg", {}).get("msg")
-        if registration_msg and registration_msg.startswith("Registrations open at "):
+        if registration_msg and registration_msg.startswith("Registrations open at"):
             date_str = registration_msg.replace("Registrations open at ", "").strip()
             registration_msg_check = datetime.strptime(date_str, "%I:%M%p %A, %B %d, %Y")
         else:
@@ -68,27 +68,15 @@ for record in data_list:
     elif two_week_check.date() == now.date():
         sign_up_list.append(record)
 
-msg_string = "Library Activity Alert: \n"
 if len(sign_up_list) != 0:
     for each_subscriber in subscribers:
+        msg_string = "Library Activity Alert: \n"
         for record in sign_up_list:
             for each_cat in record["categories_arr"]:
                 for each_category in each_subscriber["categories"]:
                     if each_cat.get("cat_id") == each_category:
                         msg_string += f"{record.get('fromTime')} - {record['title']}\n"
                         msg_string += f"{record.get('url')}\n\n"
-
-        msg = EmailMessage()
-
-        msg["From"] = AUTOMATION_EMAIL
-        msg["To"] = each_subscriber.get("phone")
-        msg["Subject"] = ""
-
-        msg.set_content(msg_string)
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-            smtp.login(AUTOMATION_EMAIL, AUTOMATION_PASSWORD)
-            smtp.send_message(msg)
 
 if len(restricted_list) != 0:
     for each_subscriber in subscribers:

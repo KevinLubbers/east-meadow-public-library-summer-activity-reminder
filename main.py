@@ -54,7 +54,7 @@ for record in data_list:
     two_week_check = (date_check - timedelta(days=14))
     if not record.get("registration_enabled"):
         registration_msg = record.get("registration_msg", {}).get("msg")
-        if registration_msg:
+        if registration_msg and registration_msg.startswith("Registrations open at "):
             date_str = registration_msg.replace("Registrations open at ", "").strip()
             registration_msg_check = datetime.strptime(date_str, "%I:%M%p %A, %B %d, %Y")
         else:

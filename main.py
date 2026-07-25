@@ -55,7 +55,7 @@ for record in data_list:
     if not record.get("registration_enabled"):
         registration_msg = record.get("registration_msg", {}).get("msg")
         if registration_msg and registration_msg.startswith("Registrations open at"):
-            date_str = registration_msg.replace("Registrations open at ", "").strip()
+            date_str = registration_msg.replace("Registrations open at", "").strip()
             registration_msg_check = datetime.strptime(date_str, "%I:%M%p %A, %B %d, %Y")
         else:
             registration_msg_check = None
@@ -63,11 +63,17 @@ for record in data_list:
     else:
         registration_msg_check =  None
 
-    if registration_msg_check and registration_msg_check.date() == now.date():
+    if registration_msg_check and registration_msg_check.date() <= now.date() + timedelta(days=2):
         restricted_list.append(record)
-    elif two_week_check.date() == now.date():
+    elif two_week_check.date() == now.date() and registration_msg_check is None:
         sign_up_list.append(record)
 
+#print(json.dumps(sign_up_list, indent=4))
+#print("---")
+#print(json.dumps(restricted_list, indent=4))
+
+with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+    smtp.login(AUTOMATION_EMAIL, AUTOMATION_PASSWORD)
 if len(sign_up_list) != 0:
     for each_subscriber in subscribers:
         msg_string = "Library Activity Two Week Alert: \n"
@@ -80,16 +86,13 @@ if len(sign_up_list) != 0:
 
         if msg_string != "Library Activity Two Week Alert: \n":
             msg = EmailMessage()
-
             msg["From"] = AUTOMATION_EMAIL
             msg["To"] = each_subscriber.get("phone")
-            msg["Subject"] = ""
+            msg["Subject"] = "Library Activity Alert"
 
             msg.set_content(msg_string)
-
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-                smtp.login(AUTOMATION_EMAIL, AUTOMATION_PASSWORD)
-                smtp.send_message(msg)
+            smtp.send_message(msg)
+            
 
 if len(restricted_list) != 0:
     for each_subscriber in subscribers:
@@ -107,10 +110,7 @@ if len(restricted_list) != 0:
 
             msg["From"] = AUTOMATION_EMAIL
             msg["To"] = each_subscriber.get("phone")
-            msg["Subject"] = ""
+            msg["Subject"] = "Library Activity Registration Opening Alert"
 
             msg.set_content(msg_string)
-
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-                smtp.login(AUTOMATION_EMAIL, AUTOMATION_PASSWORD)
-                smtp.send_message(msg)
+            smtp.send_message(msg)

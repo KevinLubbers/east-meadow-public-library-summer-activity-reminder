@@ -13,7 +13,7 @@ AUTOMATION_PHONENUMBER = os.environ["AUTOMATION_PHONENUMBER"]
 with open(".env", "r") as file:
     config = json.load(file)
 '''
-
+    
 config = json.loads(os.environ["CONFIG_JSON"])
 
 libraries = config["libraries"]
@@ -58,12 +58,12 @@ for record in data_list:
             date_str = registration_msg.replace("Registrations open at ", "").strip()
             registration_msg_check = datetime.strptime(date_str, "%I:%M%p %A, %B %d, %Y")
         else:
-            registration_msg_check = datetime(1999, 1, 1)
+            registration_msg_check = None
 
     else:
-        registration_msg_check = datetime(1999, 1, 1)
+        registration_msg_check =  None
 
-    if registration_msg_check.date() == now.date():
+    if registration_msg_check and registration_msg_check.date() == now.date():
         restricted_list.append(record)
     elif two_week_check.date() == now.date():
         sign_up_list.append(record)
@@ -78,17 +78,18 @@ if len(sign_up_list) != 0:
                         msg_string += f"{record.get('fromTime')} - {record['title']}\n"
                         msg_string += f"{record.get('url')}\n\n"
 
-        msg = EmailMessage()
+        if msg_string != "Library Activity Two Week Alert: \n":
+            msg = EmailMessage()
 
-        msg["From"] = AUTOMATION_EMAIL
-        msg["To"] = each_subscriber.get("phone")
-        msg["Subject"] = ""
+            msg["From"] = AUTOMATION_EMAIL
+            msg["To"] = each_subscriber.get("phone")
+            msg["Subject"] = ""
 
-        msg.set_content(msg_string)
+            msg.set_content(msg_string)
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-            smtp.login(AUTOMATION_EMAIL, AUTOMATION_PASSWORD)
-            smtp.send_message(msg)
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+                smtp.login(AUTOMATION_EMAIL, AUTOMATION_PASSWORD)
+                smtp.send_message(msg)
 
 if len(restricted_list) != 0:
     for each_subscriber in subscribers:
@@ -100,14 +101,16 @@ if len(restricted_list) != 0:
                         msg_string += f"{record.get('fromTime')} - {record['title']}\n"
                         msg_string += f"{record.get('registration_msg', {}).get('msg')}\n"
                         msg_string += f"{record.get('url')}\n\n"
-        msg = EmailMessage()
 
-        msg["From"] = AUTOMATION_EMAIL
-        msg["To"] = each_subscriber.get("phone")
-        msg["Subject"] = ""
+        if msg_string != "Library Activity Registration Opening Alert: \n":
+            msg = EmailMessage()
 
-        msg.set_content(msg_string)
+            msg["From"] = AUTOMATION_EMAIL
+            msg["To"] = each_subscriber.get("phone")
+            msg["Subject"] = ""
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-            smtp.login(AUTOMATION_EMAIL, AUTOMATION_PASSWORD)
-            smtp.send_message(msg)
+            msg.set_content(msg_string)
+
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+                smtp.login(AUTOMATION_EMAIL, AUTOMATION_PASSWORD)
+                smtp.send_message(msg)

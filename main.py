@@ -1,13 +1,24 @@
 import os
 import json
 import requests
-import smtplib
-from email.message import EmailMessage
 from datetime import datetime, timedelta
 
 AUTOMATION_EMAIL = os.environ["AUTOMATION_EMAIL"]
 AUTOMATION_PASSWORD = os.environ["AUTOMATION_PASSWORD"]
 AUTOMATION_PHONENUMBER = os.environ["AUTOMATION_PHONENUMBER"]
+TEXTBEE_API_KEY = os.environ["TEXTBEE_API_KEY"]
+TEXTBEE_DEVICE_ID = os.environ["TEXTBEE_DEVICE_ID"]
+
+def send_sms(to: str, body: str) -> dict:
+    response = requests.post(
+        f"https://api.textbee.dev/api/v1/gateway/devices/{TEXTBEE_DEVICE_ID}/send-sms",
+        json={"recipients": [to], "message": body},
+        headers={"x-api-key": TEXTBEE_API_KEY},
+        timeout=30,
+    )
+    response.raise_for_status()
+    return response.json()
+    
 
 '''uncomment to load secrets from .env
 with open(".env", "r") as file:
@@ -72,45 +83,32 @@ for record in data_list:
 #print("---")
 #print(json.dumps(restricted_list, indent=4))
 
-with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-    smtp.login(AUTOMATION_EMAIL, AUTOMATION_PASSWORD)
-    if len(sign_up_list) != 0:
-        for each_subscriber in subscribers:
-            msg_string = "Library Activity Two Week Alert: \n"
-            for record in sign_up_list:
-                for each_cat in record["categories_arr"]:
-                    for each_category in each_subscriber["categories"]:
-                        if each_cat.get("cat_id") == each_category:
-                            msg_string += f"{record.get('fromTime')} - {record['title']}\n"
-                            msg_string += f"{record.get('url')}\n\n"
+if len(sign_up_list) != 0:
+    for each_subscriber in subscribers:
+        msg_string = "Library Activity Two Week Alert: \n"
+        for record in sign_up_list:
+            for each_cat in record["categories_arr"]:
+                for each_category in each_subscriber["categories"]:
+                    if each_cat.get("cat_id") == each_category:
+                        msg_string += f"{record.get('fromTime')} - {record['title']}\n"
+                        msg_string += f"{record.get('url')}\n\n"
 
-            if msg_string != "Library Activity Two Week Alert: \n":
-                msg = EmailMessage()
-                msg["From"] = AUTOMATION_EMAIL
-                msg["To"] = each_subscriber.get("phone")
-                msg["Subject"] = "Library Activity Alert"
+        if msg_string != "Library Activity Two Week Alert: \n":
+            api_response = send_sms(each_subscriber.get("phone"), msg_string)
+            print(api_response)
+        
 
-                msg.set_content(msg_string)
-                smtp.send_message(msg)
-            
+if len(restricted_list) != 0:
+    for each_subscriber in subscribers:
+        msg_string = "Library Activity Registration Opening Alert: \n"
+        for record in restricted_list:
+            for each_cat in record["categories_arr"]:
+                for each_category in each_subscriber["categories"]:
+                    if each_cat.get("cat_id") == each_category:
+                        msg_string += f"{record.get('fromTime')} - {record['title']}\n"
+                        msg_string += f"{record.get('registration_msg', {}).get('msg')}\n"
+                        msg_string += f"{record.get('url')}\n\n"
 
-    if len(restricted_list) != 0:
-        for each_subscriber in subscribers:
-            msg_string = "Library Activity Registration Opening Alert: \n"
-            for record in restricted_list:
-                for each_cat in record["categories_arr"]:
-                    for each_category in each_subscriber["categories"]:
-                        if each_cat.get("cat_id") == each_category:
-                            msg_string += f"{record.get('fromTime')} - {record['title']}\n"
-                            msg_string += f"{record.get('registration_msg', {}).get('msg')}\n"
-                            msg_string += f"{record.get('url')}\n\n"
-
-            if msg_string != "Library Activity Registration Opening Alert: \n":
-                msg = EmailMessage()
-
-                msg["From"] = AUTOMATION_EMAIL
-                msg["To"] = each_subscriber.get("phone")
-                msg["Subject"] = "Library Activity Registration Opening Alert"
-
-                msg.set_content(msg_string)
-                smtp.send_message(msg)
+        if msg_string != "Library Activity Registration Opening Alert: \n":
+            api_response = send_sms(each_subscriber.get("phone"), msg_string)
+            print(api_response)

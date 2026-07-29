@@ -83,7 +83,7 @@ for record in data_list:
 #print("---")
 #print(json.dumps(restricted_list, indent=4))
 
-max_msg_length = 3000
+max_msg_length = 2000
 
 if len(sign_up_list) != 0:
     for each_subscriber in subscribers:

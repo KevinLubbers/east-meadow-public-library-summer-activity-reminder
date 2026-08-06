@@ -3,9 +3,6 @@ import json
 import requests
 from datetime import datetime, timedelta
 
-AUTOMATION_EMAIL = os.environ["AUTOMATION_EMAIL"]
-AUTOMATION_PASSWORD = os.environ["AUTOMATION_PASSWORD"]
-AUTOMATION_PHONENUMBER = os.environ["AUTOMATION_PHONENUMBER"]
 TEXTBEE_API_KEY = os.environ["TEXTBEE_API_KEY"]
 TEXTBEE_DEVICE_ID = os.environ["TEXTBEE_DEVICE_ID"]
 
@@ -20,11 +17,6 @@ def send_sms(to: str, body: str) -> dict:
     return response.json()
     
 
-'''uncomment to load secrets from .env
-with open(".env", "r") as file:
-    config = json.load(file)
-'''
-    
 config = json.loads(os.environ["CONFIG_JSON"])
 
 libraries = config["libraries"]
@@ -85,6 +77,8 @@ for record in data_list:
 
 max_msg_length = 2000
 
+'''
+#commenting out for better UX, maybe we bring back later
 if len(sign_up_list) != 0:
     for each_subscriber in subscribers:
         msg_string = "Library Activity Two Week Alert: \n"
@@ -102,6 +96,7 @@ if len(sign_up_list) != 0:
         if msg_string != "Library Activity Two Week Alert: \n":
             api_response = send_sms(each_subscriber.get("phone"), msg_string)
             print(api_response)
+'''
         
 
 if len(restricted_list) != 0:

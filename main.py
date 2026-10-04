@@ -100,7 +100,7 @@ if len(sign_up_list) != 0:
         
 
 if len(restricted_list) != 0:
-    for each_subscriber in [s for s in subscribers if s["library"] == library]:
+    for each_subscriber in [s for s in subscribers if s["library"] == API_LIBRARY]:
         msg_string = "Library Activity Registration Opening Alert: \n"
         for record in restricted_list:
             for each_cat in record["categories_arr"]:

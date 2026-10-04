@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 TEXTBEE_API_KEY = os.environ["TEXTBEE_API_KEY"]
 TEXTBEE_DEVICE_ID = os.environ["TEXTBEE_DEVICE_ID"]
+API_LIBRARY = os.environ["LIBRARY"]
 
 def send_sms(to: str, body: str) -> dict:
     response = requests.post(
@@ -19,32 +20,31 @@ def send_sms(to: str, body: str) -> dict:
 
 config = json.loads(os.environ["CONFIG_JSON"])
 
-libraries = config["libraries"]
+library = config["libraries"].get(API_LIBRARY)
 subscribers = config["subscribers"]
 
 data_list = []
-for library_name, library in libraries.items():
 
-    params = {
-        "c": -1,
-        "date": "0000-00-00",
-        "perpage": 500,
-        "page": 1,
-        "audience": "",
-        "cats": library["cats"],
-        "camps": "undefined",
-        "inc": 0,
-    }
+params = {
+    "c": -1,
+    "date": "0000-00-00",
+    "perpage": 500,
+    "page": 1,
+    "audience": "",
+    "cats": library["cats"],
+    "camps": "undefined",
+    "inc": 0,
+}
 
-    response = requests.get(
-        library["url"],
-        params=params
-    )
+response = requests.get(
+    library["url"],
+    params=params
+)
 
-    response.raise_for_status()
+response.raise_for_status()
 
-    data = response.json()
-    data_list.extend(data["results"])
+data = response.json()
+data_list.extend(data["results"])
 
 
 
@@ -100,7 +100,7 @@ if len(sign_up_list) != 0:
         
 
 if len(restricted_list) != 0:
-    for each_subscriber in subscribers:
+    for each_subscriber in [s for s in subscribers if s["library"] == library]:
         msg_string = "Library Activity Registration Opening Alert: \n"
         for record in restricted_list:
             for each_cat in record["categories_arr"]:

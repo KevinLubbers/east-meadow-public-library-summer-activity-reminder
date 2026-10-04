@@ -2,6 +2,12 @@ name: Library Alert
 
 on:
   workflow_dispatch:
+    inputs:
+      library:
+        description: "selects which library API to call based off of registration times"
+        required: true
+        type: string 
+
 
 jobs:
   run-script:
@@ -22,4 +28,5 @@ jobs:
           CONFIG_JSON: ${{ secrets.CONFIG_JSON }}
           TEXTBEE_API_KEY: ${{ secrets.TEXTBEE_API_KEY }}
           TEXTBEE_DEVICE_ID: ${{ secrets.TEXTBEE_DEVICE_ID }}
+          LIBRARY: ${{ inputs.library }}
         run: python main.py

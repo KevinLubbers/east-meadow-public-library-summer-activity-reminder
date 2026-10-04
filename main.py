@@ -71,48 +71,32 @@ for record in data_list:
     elif two_week_check.date() == now.date() and registration_msg_check is None:
         sign_up_list.append(record)
 
-#print(json.dumps(sign_up_list, indent=4))
-#print("---")
-#print(json.dumps(restricted_list, indent=4))
 
 max_msg_length = 2000
 
-'''
-#commenting out for better UX, maybe we bring back later
-if len(sign_up_list) != 0:
-    for each_subscriber in subscribers:
-        msg_string = "Library Activity Two Week Alert: \n"
-        for record in sign_up_list:
-            for each_cat in record["categories_arr"]:
-                for each_category in each_subscriber["categories"]:
-                    if each_cat.get("cat_id") == each_category:
-                        if len(msg_string) > max_msg_length:
-                            api_response = send_sms(each_subscriber.get("phone"), msg_string)
-                            print(api_response)
-                            msg_string = "Library Activity Two Week Alert: \n"
-                        msg_string += f"{record.get('fromTime')} - {record['title']}\n"
-                        msg_string += f"{record.get('url')}\n\n"
-
-        if msg_string != "Library Activity Two Week Alert: \n":
-            api_response = send_sms(each_subscriber.get("phone"), msg_string)
-            print(api_response)
-'''
-        
 
 if len(restricted_list) != 0:
+    records_by_category = {}
+    for record in restricted_list:
+        for each_category in record["categories_arr"]:
+            records_by_category.setdefault(each_category.get("cat_id"), set()).add(id(record))
+
     for each_subscriber in [s for s in subscribers if s["library"] == API_LIBRARY]:
         msg_string = "Library Activity Registration Opening Alert: \n"
+        matching_ids = set()
+        for each_cat in each_subscriber["categories"]:
+            matching_ids |= records_by_category.get(each_cat, set())
+
         for record in restricted_list:
-            for each_cat in record["categories_arr"]:
-                for each_category in each_subscriber["categories"]:
-                    if each_cat.get("cat_id") == each_category:
-                        if len(msg_string) > max_msg_length:
-                            api_response = send_sms(each_subscriber.get("phone"), msg_string)
-                            print(api_response)
-                            msg_string = "Library Activity Registration Opening Alert: \n"
-                        msg_string += f"{record.get('fromTime')} - {record['title']}\n"
-                        msg_string += f"{record.get('registration_msg', {}).get('msg')}\n"
-                        msg_string += f"{record.get('url')}\n\n"
+            if id(record) not in matching_ids:
+                continue
+            if len(msg_string) > max_msg_length:
+                api_response = send_sms(each_subscriber.get("phone"), msg_string)
+                print(api_response)
+                msg_string = "Library Activity Registration Opening Alert: \n"
+            msg_string += f"{record.get('fromTime')} - {record['title']}\n"
+            msg_string += f"{record.get('registration_msg', {}).get('msg')}\n"
+            msg_string += f"{record.get('url')}\n\n"
 
         if msg_string != "Library Activity Registration Opening Alert: \n":
             api_response = send_sms(each_subscriber.get("phone"), msg_string)
